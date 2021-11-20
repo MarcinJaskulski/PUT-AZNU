@@ -10,11 +10,10 @@
  * Do not edit the class manually.
  */
 
-package org.bp.gate.model;
+package org.bp.train.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -31,15 +30,6 @@ public class BookingInfo {
 
   @JsonProperty("travelTimeByCar")
   private Integer travelTimeByCar = null;
-
-  public BookingInfo() {
-  }
-
-  public BookingInfo(String id, Integer travelTimeByTrain, Integer travelTimeByCar) {
-    this.id = id;
-    this.travelTimeByTrain = travelTimeByTrain;
-    this.travelTimeByCar = travelTimeByCar;
-  }
 
   /**
    * Get id
@@ -95,12 +85,8 @@ public class BookingInfo {
     this.travelTimeByCar = travelTimeByCar;
   }
 
-  public boolean containsValue() {
 
-    return !Objects.equals(this.id, null) ||
-            !Objects.equals(this.travelTimeByTrain, null) ||
-            !Objects.equals(this.travelTimeByCar, null);
-  }
+
 
 
   @Override
