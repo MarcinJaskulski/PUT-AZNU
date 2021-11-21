@@ -32,6 +32,8 @@ public class BookingInfo {
   @JsonProperty("travelTimeByCar")
   private Integer travelTimeByCar = null;
 
+
+
   public BookingInfo() {
   }
 

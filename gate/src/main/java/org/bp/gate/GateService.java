@@ -74,26 +74,24 @@ public class GateService extends RouteBuilder {
                 .process((exchange) -> {
                     exchange.getMessage().setHeader("bookingTravelId", messageIdentifierService.getMessageIdentifier());
                 })
-                .to("direct:TravelBookRequest");
+                .to("direct:TravelBookRequest")
+                .end();
 
         from("direct:TravelBookRequest").routeId("TravelBookRequest")
                 .log("TravelBookRequest fired")
-                .process( (x) ->{
-                    int a = 8;
-                })
                 .marshal().json()
+                .multicast()
                 .to("kafka:TravelReqTopic?brokers=localhost:9092")
-                .to("direct:integrateRequest");
+                .to("direct:integrateRequest")
+                .end();
 
         // Odebranie od mikrousług
         from("kafka:bookResponseTopic?brokers=localhost:9092").routeId("bookResponseTopic")
                 .log("bookResponseTopic fired")
                 .unmarshal().json(JsonLibrary.Jackson, BookingInfo.class)
-                .process( (x) ->{
-                    int a = 8;
-                })
                 .marshal().json()
-                .to("direct:integrateRequest");
+                .to("direct:integrateRequest")
+                .end();
 
 
 
@@ -105,60 +103,56 @@ public class GateService extends RouteBuilder {
                             String bookingTravelId = exchange.getMessage().getHeader("bookingTravelId", String.class);
                             BookingInfo bookingInfo = exchange.getMessage().getBody(BookingInfo.class);
 
-                            boolean isReady = false;
-                            if(bookingInfo.containsValue()){ // dla faktyzcnego komunikatu
-                                isReady = integrationService.addBookingInfo(
+                            integrationService.addBookingInfo(
                                         bookingTravelId,
                                         bookingInfo,
                                         exchange.getMessage().getHeader("serviceType", String.class));
 
-                                exchange.getMessage().setBody(bookingInfo);
-                            }
-                            else // dla wątku, który ma zwrócić wynik
-                                isReady = integrationService.getReservationData(bookingTravelId).isReady();
-                            exchange.getMessage().setHeader("isReady", isReady);
+                            IntegrationService.ReservationData reservationData = integrationService.getReservationData(bookingTravelId);
+
+                            exchange.getMessage().setHeader("work", "work1");
+                            exchange.getMessage().setHeader("isReady", reservationData.isReady());
+
+                            int travelTimeByTrain = -1;
+                            int travelTimeByCar = -1;
+                            if(reservationData.trainBookingInfo != null)
+                                travelTimeByTrain = reservationData.trainBookingInfo.getTravelTimeByTrain();
+                            if(reservationData.carBookingInfo != null)
+                                travelTimeByCar = reservationData.carBookingInfo.getTravelTimeByCar();
+
+                            exchange.getMessage().setBody(
+                                    new BookingInfo(
+                                            bookingTravelId,
+                                            travelTimeByTrain,
+                                            travelTimeByCar)
+                            );
                         }
                 )
                 .marshal().json()
+                .log("Poszlo")
                 .choice()
                 .when(header("isReady").isEqualTo(true)).to("direct:notification")
-                .endChoice()
-                .log("Poszlo");
+                .otherwise().to("direct:integrateRequest")
+                .endChoice();
 
 
-        // Odesłanie odpowiedzi - // TO NIE DZIALA !!!! :(
+        // Odesłanie odpowiedzi
         from("direct:notification").routeId("notification")
                 .log("fired notification")
-//                .marshal().json()
+                .unmarshal().json(JsonLibrary.Jackson, BookingInfo.class)
                 .process((exchange) -> {
-                    exchange.getMessage().setHeader("work", "work");
-                    exchange.getMessage().setBody(
-                            new BookingInfo("aaa", 1, 4)
-                    );
+                    exchange.getMessage().setHeader("work", "work2");
+
+                    BookingInfo bookingInfo = exchange.getMessage().getBody(BookingInfo.class);
+                    exchange.getMessage().setBody( bookingInfo);
+
                 })
-                .marshal().json()
-                .removeHeaders("CamelHttp*")
-                .log("created")
-                .to("stream:out")
-                .unmarshal().json(JsonLibrary.Jackson, BookingInfo.class);
-//                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(200))
-//                .end();
-//                .marshal().json();
-//                .to("stream:out");
+                .removeHeaders("Camel*")
+                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(200));
+//                .convertBodyTo(String.class);
 
 
 
-//        from("direct:notification").routeId("notification")
-//                .log("fired notification")
-////                .unmarshal().json(JsonLibrary.Jackson, BookingInfo.class)
-//                .process( (exchange) ->{
-//                    exchange.getMessage().setBody(new BookingInfo("aaa", 1, 4));
-//                })
-//                .marshal().json();
-//                .to("stream:out");
-//
-//                .marshal().json()
-//                .end();
 
     }
 }

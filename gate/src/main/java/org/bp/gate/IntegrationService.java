@@ -28,12 +28,15 @@ public class IntegrationService {
 	}
 	
 	public synchronized boolean addBookingInfo(String bookTravelId, BookingInfo bookingInfo, String serviceType) {
-		ReservationData reservationData = getReservationData(bookTravelId);
-		if (serviceType.equals("car"))
-			reservationData.carBookingInfo = bookingInfo;
-		else if (serviceType.equals("train"))
-			reservationData.trainBookingInfo = bookingInfo;
-		return reservationData.isReady();
+		if(serviceType != null){
+			ReservationData reservationData = getReservationData(bookTravelId);
+			if (serviceType.equals("car"))
+				reservationData.carBookingInfo = bookingInfo;
+			else if (serviceType.equals("train"))
+				reservationData.trainBookingInfo = bookingInfo;
+			return reservationData.isReady();
+		}
+		return  false;
 	}	
 	
 	
