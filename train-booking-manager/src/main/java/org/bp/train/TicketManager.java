@@ -1,10 +1,7 @@
 package org.bp.train;
 
 import org.bp.train.exceptions.TrainBookingException;
-import org.bp.train.model.TrainSeat;
-import org.bp.train.model.TrainTicket;
-import org.bp.train.model.TrainTicketRequest;
-import org.bp.train.model.TrainTicketResponse;
+import org.bp.train.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

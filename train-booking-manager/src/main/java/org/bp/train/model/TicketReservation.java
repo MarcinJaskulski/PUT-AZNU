@@ -1,4 +1,4 @@
-package org.bp.train;
+package org.bp.train.model;
 
 import org.bp.train.model.TrainTicket;
 

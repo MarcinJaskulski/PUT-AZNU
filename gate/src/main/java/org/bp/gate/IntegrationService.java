@@ -1,7 +1,7 @@
 package org.bp.gate;
 
 
-import org.bp.gate.model.BookingInfo;
+import org.bp.gate.model.BookingInfoResponse;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -17,8 +17,8 @@ public class IntegrationService {
 	}
 	
 	public static class ReservationData {
-		BookingInfo trainBookingInfo;
-		BookingInfo carBookingInfo;
+		BookingInfoResponse trainBookingInfo;
+		BookingInfoResponse carBookingInfo;
 //		public boolean isReady() {
 //			return trainBookingInfo!=null && carBookingInfo !=null;
 //		}
@@ -27,7 +27,7 @@ public class IntegrationService {
 		}
 	}
 	
-	public synchronized boolean addBookingInfo(String bookTravelId, BookingInfo bookingInfo, String serviceType) {
+	public synchronized boolean addBookingInfo(String bookTravelId, BookingInfoResponse bookingInfo, String serviceType) {
 		if(serviceType != null){
 			ReservationData reservationData = getReservationData(bookTravelId);
 			if (serviceType.equals("car"))

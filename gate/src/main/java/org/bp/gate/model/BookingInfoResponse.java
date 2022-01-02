@@ -14,7 +14,6 @@ package org.bp.gate.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -22,7 +21,7 @@ import java.util.Objects;
  */
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-12-06T08:44:40.322365400+01:00[Europe/Warsaw]")
-public class BookingInfo {
+public class BookingInfoResponse {
   @JsonProperty("id")
   private String id = null;
 
@@ -34,10 +33,10 @@ public class BookingInfo {
 
 
 
-  public BookingInfo() {
+  public BookingInfoResponse() {
   }
 
-  public BookingInfo(String id, Integer travelTimeByTrain, Integer travelTimeByCar) {
+  public BookingInfoResponse(String id, Integer travelTimeByTrain, Integer travelTimeByCar) {
     this.id = id;
     this.travelTimeByTrain = travelTimeByTrain;
     this.travelTimeByCar = travelTimeByCar;
@@ -48,7 +47,7 @@ public class BookingInfo {
    * @return id
    **/
 
-  public BookingInfo id(String id) {
+  public BookingInfoResponse id(String id) {
     this.id = id;
     return this;
   }
@@ -66,7 +65,7 @@ public class BookingInfo {
    * @return cost
    **/
 
-  public BookingInfo travelTimeByTrain(Integer travelTimeByTrain) {
+  public BookingInfoResponse travelTimeByTrain(Integer travelTimeByTrain) {
     this.travelTimeByTrain = travelTimeByTrain;
     return this;
   }
@@ -84,7 +83,7 @@ public class BookingInfo {
    * @return travelTimeByCar
    **/
 
-  public BookingInfo travelTimeByCar(Integer travelTimeByCar) {
+  public BookingInfoResponse travelTimeByCar(Integer travelTimeByCar) {
     this.travelTimeByCar = travelTimeByCar;
     return this;
   }
@@ -113,7 +112,7 @@ public class BookingInfo {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    BookingInfo bookingInfo = (BookingInfo) o;
+    BookingInfoResponse bookingInfo = (BookingInfoResponse) o;
     return Objects.equals(this.id, bookingInfo.id) &&
             Objects.equals(this.travelTimeByTrain, bookingInfo.travelTimeByTrain) &&
             Objects.equals(this.travelTimeByCar, bookingInfo.travelTimeByCar);

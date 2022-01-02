@@ -1,10 +1,8 @@
 package org.bp.gate.model;
 
-import java.math.BigDecimal;
-
 public class Utils {
-    static public BookingInfo prepareBookingInfo(String bookingId, Integer travelTimeByTrain, Integer travelTimeByCar) {
-        BookingInfo bookingInfo = new BookingInfo();
+    static public BookingInfoResponse prepareBookingInfo(String bookingId, Integer travelTimeByTrain, Integer travelTimeByCar) {
+        BookingInfoResponse bookingInfo = new BookingInfoResponse();
         bookingInfo.setId(bookingId);
         bookingInfo.setTravelTimeByTrain(travelTimeByTrain);
         bookingInfo.setTravelTimeByCar(travelTimeByCar);

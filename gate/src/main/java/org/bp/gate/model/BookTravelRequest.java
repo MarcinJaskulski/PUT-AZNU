@@ -23,6 +23,9 @@ import java.util.Objects;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-12-06T08:44:40.322365400+01:00[Europe/Warsaw]")
 public class BookTravelRequest {
 
+  @JsonProperty("id")
+  private String id = null;
+
   @JsonProperty("numberOfPerson")
   private Integer numberOfPerson = null;
 
@@ -34,6 +37,25 @@ public class BookTravelRequest {
 
   @JsonProperty("travelByCarTo")
   private Point travelByCarTo = null;
+
+  /**
+   * @param id
+   * @return
+   */
+
+  public BookTravelRequest id(String id) {
+    this.id = id;
+    return this;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
 
   /**
    * @param numberOfPerson
@@ -119,6 +141,7 @@ public class BookTravelRequest {
     }
     BookTravelRequest bookTravelRequest = (BookTravelRequest) o;
     return Objects.equals(this.numberOfPerson, bookTravelRequest.numberOfPerson) &&
+            Objects.equals(this.id, bookTravelRequest.id) &&
             Objects.equals(this.travelByTrainForm, bookTravelRequest.travelByTrainForm) &&
             Objects.equals(this.transportHub, bookTravelRequest.transportHub) &&
             Objects.equals(this.travelByCarTo, bookTravelRequest.travelByCarTo);
@@ -126,7 +149,7 @@ public class BookTravelRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(numberOfPerson, travelByTrainForm, transportHub, travelByCarTo);
+    return Objects.hash(id, numberOfPerson, travelByTrainForm, transportHub, travelByCarTo);
   }
 
 
@@ -136,6 +159,7 @@ public class BookTravelRequest {
     sb.append("class BookTravelRequest {\n");
 
     sb.append("    numberOfPerson: ").append(toIndentedString(numberOfPerson)).append("\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    travelByTrainForm: ").append(toIndentedString(travelByTrainForm)).append("\n");
     sb.append("    transportHub: ").append(toIndentedString(transportHub)).append("\n");
     sb.append("    travelByCarTo: ").append(toIndentedString(travelByCarTo)).append("\n");

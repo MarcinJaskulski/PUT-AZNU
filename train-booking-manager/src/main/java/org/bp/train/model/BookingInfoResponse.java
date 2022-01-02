@@ -21,7 +21,7 @@ import java.util.Objects;
  */
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-12-06T08:44:40.322365400+01:00[Europe/Warsaw]")
-public class BookingInfo {
+public class BookingInfoResponse {
   @JsonProperty("id")
   private String id = null;
 
@@ -31,12 +31,23 @@ public class BookingInfo {
   @JsonProperty("travelTimeByCar")
   private Integer travelTimeByCar = null;
 
+
+
+  public BookingInfoResponse() {
+  }
+
+  public BookingInfoResponse(String id, Integer travelTimeByTrain, Integer travelTimeByCar) {
+    this.id = id;
+    this.travelTimeByTrain = travelTimeByTrain;
+    this.travelTimeByCar = travelTimeByCar;
+  }
+
   /**
    * Get id
    * @return id
    **/
 
-  public BookingInfo id(String id) {
+  public BookingInfoResponse id(String id) {
     this.id = id;
     return this;
   }
@@ -54,7 +65,7 @@ public class BookingInfo {
    * @return cost
    **/
 
-  public BookingInfo travelTimeByTrain(Integer travelTimeByTrain) {
+  public BookingInfoResponse travelTimeByTrain(Integer travelTimeByTrain) {
     this.travelTimeByTrain = travelTimeByTrain;
     return this;
   }
@@ -72,7 +83,7 @@ public class BookingInfo {
    * @return travelTimeByCar
    **/
 
-  public BookingInfo travelTimeByCar(Integer travelTimeByCar) {
+  public BookingInfoResponse travelTimeByCar(Integer travelTimeByCar) {
     this.travelTimeByCar = travelTimeByCar;
     return this;
   }
@@ -85,8 +96,12 @@ public class BookingInfo {
     this.travelTimeByCar = travelTimeByCar;
   }
 
+  public boolean containsValue() {
 
-
+    return !Objects.equals(this.id, null) ||
+            !Objects.equals(this.travelTimeByTrain, null) ||
+            !Objects.equals(this.travelTimeByCar, null);
+  }
 
 
   @Override
@@ -97,7 +112,7 @@ public class BookingInfo {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    BookingInfo bookingInfo = (BookingInfo) o;
+    BookingInfoResponse bookingInfo = (BookingInfoResponse) o;
     return Objects.equals(this.id, bookingInfo.id) &&
             Objects.equals(this.travelTimeByTrain, bookingInfo.travelTimeByTrain) &&
             Objects.equals(this.travelTimeByCar, bookingInfo.travelTimeByCar);
