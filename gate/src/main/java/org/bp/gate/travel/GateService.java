@@ -4,14 +4,15 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.bp.gate.chairs.OrderChairs;
-import org.bp.gate.chairs.OrderChairsResponse;
+import org.bp.gate.chairs.*;
 import org.bp.gate.table.TableOrderSummary;
+import org.bp.gate.travel.model.GateException;
 import org.bp.gate.travel.model.OrderRequest;
 import org.bp.gate.travel.model.OrderSummaryResponse;
 import org.springframework.stereotype.Component;
 
 import static org.apache.camel.model.rest.RestParamType.body;
+import static org.apache.camel.model.rest.RestParamType.path;
 
 @Component
 public class GateService extends RouteBuilder {
@@ -19,11 +20,13 @@ public class GateService extends RouteBuilder {
     @org.springframework.beans.factory.annotation.Autowired
     OrdersIdentifierService ordersIdentifierService;
 
+    final String chairsOrderUrl = "http://localhost:8082/soap-api/service/chairsOrder";
+
     @Override
     public void configure() throws Exception {
         gateway();
         train();
-        car();
+        chairs();
     }
 
     private void gateway() {
@@ -42,15 +45,15 @@ public class GateService extends RouteBuilder {
 
         //--------------------------Post REST--------------------------------------------------------------------------//
 
-        rest("/orderFurniture").description("Furniture factory REST service") // tu przyjmuje endpoint
+        rest("/orderFurniture").description("Order furniture") // tu przyjmuje endpoint
                 .consumes("application/json")
                 .produces("application/json")
                 // typ wchodzacy do post i typ wychodzacy z post
                 .post("/bookTravel").description("Furniture factory").type(OrderRequest.class).outType(OrderSummaryResponse.class)
                 .param().name("body").type(body).description("Furniture order param").endParam()
                 .responseMessage().code(200).message("The furniture order ordered successfully").endResponseMessage()
+                .responseMessage().code(400).responseModel(GateException.class).message("Post order exception").endResponseMessage()
                 .to("direct:orderFurniture");
-
 
         from("direct:orderFurniture").routeId("orderFurniture")
                 .log("orderFurniture fired")
@@ -58,7 +61,7 @@ public class GateService extends RouteBuilder {
                     OrderSummaryResponse orderSummaryResponse = new OrderSummaryResponse();
                     String orderId = ordersIdentifierService.generateOrderId();
                     orderSummaryResponse.setId(orderId);
-                    exchange.getMessage().setHeader("bookingTravelId", orderId);
+                    exchange.setProperty("orderId", orderId);
                     exchange.setProperty("orderSummary", orderSummaryResponse);
                 })
                 .saga()
@@ -95,10 +98,63 @@ public class GateService extends RouteBuilder {
                 .log("order created").to("stream:out")
                 .unmarshal().json(JsonLibrary.Jackson, OrderSummaryResponse.class);
 
+        //--------------------------Get REST--------------------------------------------------------------------------//
+
+        rest("/orderFurniture").description("Get order summary")
+                .produces("application/json")
+                .get("/order/{orderId}")
+                .outType(OrderSummaryResponse.class)
+                .param().name("orderId").type(path).description("Order Id").endParam()
+                .responseMessage().code(200).message("The furniture order get successfully").endResponseMessage()
+                .responseMessage().code(400).responseModel(GateException.class).message("Get order exception").endResponseMessage()
+                .to("direct:getOrderFurniture");
+
+        from("direct:getOrderFurniture")
+                .routeId("getOrderFurniture")
+                .log("getOrderFurniture fired")
+                .process(exchange -> {
+                    String orderId = exchange.getMessage().getHeader("orderId", String.class);
+                    OrderSummaryResponse orderSummaryResponse = new OrderSummaryResponse();
+                    orderSummaryResponse.setId(orderId);
+                    exchange.setProperty("orderSummary", orderSummaryResponse);
+                })
+                .saga()
+                .multicast()
+                .parallelProcessing()
+                .aggregationStrategy((prevEx, currentEx) -> {
+                    if (currentEx.getException() != null)
+                        return currentEx;
+                    if (prevEx != null && prevEx.getException() != null)
+                        return prevEx;
+
+                    OrderSummaryResponse orderSummary;
+                    if (prevEx == null)
+                        orderSummary = currentEx.getProperty("orderSummary", OrderSummaryResponse.class);
+                    else
+                        orderSummary = prevEx.getMessage().getBody(OrderSummaryResponse.class);
+
+                    Object body = currentEx.getMessage().getBody();
+                    if (body instanceof GetChairsOrderSummaryResponse)
+                        orderSummary.setChairsOrderSummary(((GetChairsOrderSummaryResponse) body).getReturn());
+                    else if (body instanceof TableOrderSummary)
+                        orderSummary.setTableOrderSummary((TableOrderSummary) body);
+                    else
+                        return prevEx;
+                    currentEx.getMessage().setBody(orderSummary);
+                    return currentEx;
+                })
+                .to("direct:getTableOrder")
+                .to("direct:getChairsOrder")
+                .end()
+                .marshal().json()
+                .log("got order").to("stream:out")
+                .unmarshal().json(JsonLibrary.Jackson, OrderSummaryResponse.class);
+
 
 ////                .to("kafka:CarTravelReqTopic?brokers=localhost:9092")
     }
     private void train(){
+        //--------------------------Post REST--------------------------------------------------------------------------//
         from("direct:tableOrder").routeId("tableOrder")
                 .log("tableOrder fired")
                 .process(exchange -> {
@@ -108,18 +164,39 @@ public class GateService extends RouteBuilder {
                 .marshal().json()
                 .removeHeaders("CamelHttp*")
                 .to("rest:post:tableOrder?host=localhost:8085")
+                .unmarshal().json(JsonLibrary.Jackson, TableOrderSummary.class)
+                .to("stream:out")
+                .process((exchange) -> {
+                    TableOrderSummary tableOrderSummary = exchange.getMessage().getBody(TableOrderSummary.class);
+                    String orderId = exchange.getProperty("orderId", String.class);
+                    ordersIdentifierService.assignTableId(orderId, tableOrderSummary.getId());
+                });
+
+        //--------------------------Get REST--------------------------------------------------------------------------//
+
+        from("direct:getTableOrder").routeId("getTableOrder")
+                .log("getTableOrder fired")
+                .process(exchange -> {
+                    String mainOrderId = exchange.getMessage().getHeader("orderId", String.class);
+                    String tableOrderId = ordersIdentifierService.getTableOrderId(mainOrderId);
+                    exchange.getMessage().setHeader("tableOrderId", tableOrderId);
+                })
+                .marshal().json()
+                .removeHeaders("CamelHttp*")
+                .toD("rest:get:getTableOrder/${header.tableOrderId}?host=localhost:8085")
                 .unmarshal().json(JsonLibrary.Jackson, TableOrderSummary.class);
     }
 
-    private void car(){
+    private void chairs(){
         final JaxbDataFormat jaxbOrderChairsResponse = new JaxbDataFormat(OrderChairsResponse.class.getPackage().getName());
 
+        //--------------------------Post SOAP--------------------------------------------------------------------------//
         from("direct:chairsOrder").routeId("chairsOrder")
                 .log("chairsOrder fired")
 //                .saga()
 //                .propagation(SagaPropagation.MANDATORY)
-//                .compensation("direct:cancelCarBooking")
-//                .option("bookingTravelId", simple("${exchangeProperty.bookingTravelId}"))
+//                .compensation("direct:cancelChairsOrder")
+//                .option("orderSummary", simple("${exchangeProperty.orderSummary}"))
                 .process((exchange) -> {
                     OrderRequest orderRequest = exchange.getMessage().getBody(OrderRequest.class);
                     OrderChairs orderChairs = new OrderChairs();
@@ -127,19 +204,41 @@ public class GateService extends RouteBuilder {
                     exchange.getMessage().setBody(orderChairs);
                 } )
                 .marshal(jaxbOrderChairsResponse)
-                .to("spring-ws:http://localhost:8082/soap-api/service/chairsOrder")
-                .unmarshal(jaxbOrderChairsResponse);
+                .to("spring-ws:" + chairsOrderUrl)
+                .to("stream:out")
+                .unmarshal(jaxbOrderChairsResponse)
+                .process((exchange) -> {
+                    OrderChairsResponse chairsOrderSummary = exchange.getMessage().getBody(OrderChairsResponse.class);
+                    String orderId = exchange.getProperty("orderId", String.class);
+                    ordersIdentifierService.assignChairsOrderId(orderId, chairsOrderSummary.getReturn().getId());
+                });
 
-
-//        from("direct:cancelCarBooking").routeId("cancelCarBooking").log("cancelCarBooking fired")
+//
+//        from("direct:cancelChairsOrder").routeId("cancelChairsOrder")
+//                .log("cancelChairsOrder fired")
 //                .process(exchange -> {
-//                    OrderSummary orderSummary = exchange.getMessage().getHeader("orderSummary", OrderSummary.class);
-//                    CancelJacketProduction cancelJacketProduction = new CancelJacketProduction();
-//                    cancelJacketProduction.setArg0(orderSummary.getId());
-//                    exchange.getMessage().setBody(cancelJacketProduction);
+//                    ChairsOrderSummary orderSummary = exchange.getMessage().getHeader("orderSummary", ChairsOrderSummary.class);
+//                    CancelChairsOrder cancelChairsOrder = new CancelChairsOrder();
+//                    cancelChairsOrder.setArg0(orderSummary.getId());
+//                    exchange.getMessage().setBody(cancelChairsOrder);
 //                })
-//                .marshal(jaxbJacket)
-//                .to("spring-ws:http://localhost:8083/soap-api/service/jacket/cancelJacketProduction");
+//                .marshal(jaxbOrderChairsResponse)
+//                .to("spring-ws:" + chairsOrderUrl + "/cancelChairsOrder");
+
+        //--------------------------Get SOAP--------------------------------------------------------------------------//
+
+        from("direct:getChairsOrder")
+                .routeId("getChairsOrder").log("getChairsOrder fired")
+                .process(exchange -> {
+                    String mainOrderId = exchange.getMessage().getHeader("orderId", String.class);
+                    String chairsOrderId = ordersIdentifierService.getChairsOrderId(mainOrderId);
+                    GetChairsOrderSummary getChairsOrderSummary = new GetChairsOrderSummary();
+                    getChairsOrderSummary.setArg0(chairsOrderId);
+                    exchange.getMessage().setBody(getChairsOrderSummary);
+                })
+                .marshal(jaxbOrderChairsResponse)
+                .to("spring-ws:" + chairsOrderUrl+ "/getChairsOrderSummary")
+                .unmarshal(jaxbOrderChairsResponse);
 
     }
 

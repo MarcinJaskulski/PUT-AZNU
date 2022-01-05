@@ -16,36 +16,36 @@ public class OrdersIdentifierService {
 		return orderId;
 	}
 
-	public void assignChairsOrderId(String id, int trainBookingId) {
-		ordersIds.get(id).setChairsOrderId(trainBookingId);
+	public void assignChairsOrderId(String id, String orderId) {
+		ordersIds.get(id).setChairsOrderId(orderId);
 	}
 
-	public void assignTableId(String id, int carBookingId) {
-		ordersIds.get(id).setTableOrderId(carBookingId);
+	public void assignTableId(String id, String tableId) {
+		ordersIds.get(id).setTableOrderId(tableId);
 	}
 
-	public int getChairsOrderId(String id) {
+	public String getChairsOrderId(String id) {
 		return ordersIds.get(id).getChairsOrderId();
 	}
 
-	public int getTableOrderId(String id) {
+	public String getTableOrderId(String id) {
 		return ordersIds.get(id).getTableOrderId();
 	}
 
 	public static class OrderIds{
-		private int chairsOrderId;
-		private int tableOrderId;
+		private String chairsOrderId;
+		private String tableOrderId;
 
-		public int getChairsOrderId() {
+		public String getChairsOrderId() {
 			return chairsOrderId;
 		}
-		public void setChairsOrderId(int chairsOrderId) {
+		public void setChairsOrderId(String chairsOrderId) {
 			this.chairsOrderId = chairsOrderId;
 		}
-		public int getTableOrderId() {
+		public String getTableOrderId() {
 			return tableOrderId;
 		}
-		public void setTableOrderId(int tableOrderId) {
+		public void setTableOrderId(String tableOrderId) {
 			this.tableOrderId = tableOrderId;
 		}
 	}

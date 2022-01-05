@@ -31,13 +31,13 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CancelChairsOrder {
 
-    protected int arg0;
+    protected String arg0;
 
     /**
      * Gets the value of the arg0 property.
      * 
      */
-    public int getArg0() {
+    public String getArg0() {
         return arg0;
     }
 
@@ -45,7 +45,7 @@ public class CancelChairsOrder {
      * Sets the value of the arg0 property.
      * 
      */
-    public void setArg0(int value) {
+    public void setArg0(String value) {
         this.arg0 = value;
     }
 

@@ -43,7 +43,7 @@ public class TableService {
 		tableOrderSummary.setId(UUID.randomUUID().toString());
 		tableOrderSummary.setCost(2000);
 
-		if(table.getModel().toLowerCase() == "strange")
+		if(table.getModel().toLowerCase().equals("strange"))
 			throw new TableException("Strange Table Model");
 
 		tableOrders.put(tableOrderSummary.getId(), tableOrderSummary);
@@ -60,14 +60,14 @@ public class TableService {
 					@ApiResponse(responseCode = "400", description = "Bad Request",
 							content = {@Content(mediaType = "application/json", schema = @Schema(implementation = TableException.class))})
 			})
-	@org.springframework.web.bind.annotation.GetMapping("/tableOrder/{id}")
+	@org.springframework.web.bind.annotation.GetMapping("/getTableOrder/{id}")
 	public TableOrderSummary getTableOrder(@PathVariable String id) throws TableException{
 		if(!tableOrders.containsKey(id))
 			throw new TableException("Order " + id + " does not exists");
 		return tableOrders.get(id);
 	}
 
-	@org.springframework.web.bind.annotation.DeleteMapping("/tableOrder/{id}")
+	@org.springframework.web.bind.annotation.DeleteMapping("/cancelTableOrder/{id}")
 	public void cancelTableOrder(@PathVariable String id) throws TableException{
 		if(!tableOrders.containsKey(id))
 			throw new TableException("Order " + id + " does not exists");

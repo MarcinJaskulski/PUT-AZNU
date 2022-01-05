@@ -18,12 +18,12 @@ public class ChairsService {
 		ChairsOrderSummary chairsOrderSummary = new ChairsOrderSummary(chairsOrder);
 		chairsOrderSummary.setId(UUID.randomUUID().toString());
 
-		if(chairsOrder.getMaterial().toLowerCase() == "wood")
+		if(chairsOrder.getMaterial().toLowerCase().equals("wood"))
 			chairsOrderSummary.setCost(100 * chairsOrderSummary.getAmount());
 		else
 			chairsOrderSummary.setCost(70 * chairsOrderSummary.getAmount());
 
-		if(chairsOrder.getModel().toLowerCase() == "strange")
+		if(chairsOrder.getModel().toLowerCase().equals("strange"))
 			throw new Fault("Strange Chair Model");
 
 		chairsOrders.put(chairsOrderSummary.getId(), chairsOrderSummary);
