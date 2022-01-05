@@ -2,6 +2,7 @@ package org.bp.gate.travel;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.bp.gate.chairs.*;
@@ -93,6 +94,8 @@ public class GateService extends RouteBuilder {
                 )
                 .to("direct:tableOrder")
                 .to("direct:chairsOrder")
+//                .to("kafka:tableOrderTopic?brokers=localhost:9092")
+//                .to("kafka:chairsOrderTopic?brokers=localhost:9092")
                 .end()
                 .marshal().json()
                 .log("order created").to("stream:out")
@@ -145,18 +148,21 @@ public class GateService extends RouteBuilder {
                 })
                 .to("direct:getTableOrder")
                 .to("direct:getChairsOrder")
+//                .to("kafka:getTableOrderTopic?brokers=localhost:9092")
+//                .to("kafka:getChairsOrderTopic?brokers=localhost:9092")
                 .end()
                 .marshal().json()
                 .log("got order").to("stream:out")
                 .unmarshal().json(JsonLibrary.Jackson, OrderSummaryResponse.class);
 
 
-////                .to("kafka:CarTravelReqTopic?brokers=localhost:9092")
     }
     private void table(){
         //--------------------------Post REST--------------------------------------------------------------------------//
-        from("direct:tableOrder").routeId("tableOrder")
-                .log("tableOrder fired")
+
+        from("direct:tableOrder")
+//                from("kafka:tableOrderTopic?brokers=localhost:9092")
+                .routeId("tableOrder").log("tableOrder fired")
                 .process(exchange -> {
                     OrderRequest orderRequest = exchange.getMessage().getBody(OrderRequest.class);
                     exchange.getMessage().setBody(orderRequest.getTableOrder());
@@ -173,9 +179,9 @@ public class GateService extends RouteBuilder {
                 });
 
         //--------------------------Get REST--------------------------------------------------------------------------//
-
-        from("direct:getTableOrder").routeId("getTableOrder")
-                .log("getTableOrder fired")
+        from("direct:getTableOrder")
+//            from("kafka:getTableOrderTopic?brokers=localhost:9092")
+                .routeId("getTableOrder").log("getTableOrder fired")
                 .process(exchange -> {
                     String mainOrderId = exchange.getMessage().getHeader("orderId", String.class);
                     String tableOrderId = ordersIdentifierService.getTableOrderId(mainOrderId);
@@ -191,8 +197,9 @@ public class GateService extends RouteBuilder {
         final JaxbDataFormat jaxbOrderChairsResponse = new JaxbDataFormat(OrderChairsResponse.class.getPackage().getName());
 
         //--------------------------Post SOAP--------------------------------------------------------------------------//
-        from("direct:chairsOrder").routeId("chairsOrder")
-                .log("chairsOrder fired")
+        from("direct:chairsOrder")
+//            from("kafka:chairsOrderTopic?brokers=localhost:9092")
+                .routeId("chairsOrder").log("chairsOrder fired")
 //                .saga()
 //                .propagation(SagaPropagation.MANDATORY)
 //                .compensation("direct:cancelChairsOrder")
@@ -213,7 +220,7 @@ public class GateService extends RouteBuilder {
                     ordersIdentifierService.assignChairsOrderId(orderId, chairsOrderSummary.getReturn().getId());
                 });
 
-//
+
 //        from("direct:cancelChairsOrder").routeId("cancelChairsOrder")
 //                .log("cancelChairsOrder fired")
 //                .process(exchange -> {
@@ -228,6 +235,7 @@ public class GateService extends RouteBuilder {
         //--------------------------Get SOAP--------------------------------------------------------------------------//
 
         from("direct:getChairsOrder")
+//            from("kafka:getChairsOrderTopic?brokers=localhost:9092")
                 .routeId("getChairsOrder").log("getChairsOrder fired")
                 .process(exchange -> {
                     String mainOrderId = exchange.getMessage().getHeader("orderId", String.class);

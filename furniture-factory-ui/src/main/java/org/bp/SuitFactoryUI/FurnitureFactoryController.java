@@ -68,5 +68,4 @@ public class FurnitureFactoryController {
     public String fault(Model model){
         return "fault";
     }
-
 }
