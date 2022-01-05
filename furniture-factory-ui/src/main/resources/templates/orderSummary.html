@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+  <title>Order Summary</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <h1>Order summary:</h1>
+  <p th:text="'Order Id: ' + ${orderSummaryResponse.id}" />
+
+  <h2>Chairs</h2>
+  <div>
+    <p th:text="'Id: ' + ${orderSummaryResponse.chairsOrderSummary.id}" />
+    <p th:text="'Cost: ' + ${orderSummaryResponse.chairsOrderSummary.cost}" />
+    <p th:text="'Amount: ' + ${orderSummaryResponse.chairsOrderSummary.model}" />
+    <p th:text="'Model: ' + ${orderSummaryResponse.chairsOrderSummary.model}" />
+    <p th:text="'Material: ' + ${orderSummaryResponse.chairsOrderSummary.material}" />
+  </div>
+
+  <h2>Table:</h2>
+  <div>
+    <p th:text="'Id: ' + ${orderSummaryResponse.tableOrderSummary.id}" />
+    <p th:text="'Cost: ' + ${orderSummaryResponse.tableOrderSummary.cost}" />
+    <p th:text="'Size: ' + ${orderSummaryResponse.tableOrderSummary.size}" />
+    <p th:text="'Model: ' + ${orderSummaryResponse.tableOrderSummary.model}" />
+    <p th:text="'Material: ' + ${orderSummaryResponse.tableOrderSummary.material}" />
+  </div>
+  <a href="/">Menu</a>
+</body>
+</html>

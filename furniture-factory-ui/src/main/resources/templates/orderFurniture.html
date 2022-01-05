@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+  <title>Order Furniture</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<h1>Order Furniture</h1>
+<form action="#" th:action="@{/orderFurniture}" th:object="${orderRequest}" method="post">
+
+  <h2>Chairs</h2>
+  <p>Amount: <input type="number" th:field="*{chairsOrder.amount}" /></p>
+  <p>Model: <input type="text" th:field="*{chairsOrder.model}" /></p>
+  <p>Material: <input type="text" th:field="*{chairsOrder.material}" /></p>
+
+  <h2>Table</h2>
+  <p>Size: <input type="text" th:field="*{tableOrder.size}" /></p>
+  <p>Model: <input type="text" th:field="*{tableOrder.model}" /></p>
+  <p>Material: <input type="text" th:field="*{tableOrder.material}" /></p>
+  <p>
+    <input type="submit" value="Send" />
+    <input type="reset" value="Reset" />
+  </p>
+  <br/>
+
+</form>
+<p>
+  <a href="/">Menu</a>
+  <a href="/getOrder">Get order</a>
+</p>
+</body>
+</html>

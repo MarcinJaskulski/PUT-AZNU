@@ -13,7 +13,7 @@
     <artifactId>gate</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>gate</name>
-    <description>Test of gate</description>
+    <description>Furniture Factory gate</description>
 
     <properties>
         <java.version>1.8</java.version>

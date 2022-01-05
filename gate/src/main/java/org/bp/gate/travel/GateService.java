@@ -25,7 +25,7 @@ public class GateService extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         gateway();
-        train();
+        table();
         chairs();
     }
 
@@ -49,7 +49,7 @@ public class GateService extends RouteBuilder {
                 .consumes("application/json")
                 .produces("application/json")
                 // typ wchodzacy do post i typ wychodzacy z post
-                .post("/bookTravel").description("Furniture factory").type(OrderRequest.class).outType(OrderSummaryResponse.class)
+                .post("/order").description("Furniture factory").type(OrderRequest.class).outType(OrderSummaryResponse.class)
                 .param().name("body").type(body).description("Furniture order param").endParam()
                 .responseMessage().code(200).message("The furniture order ordered successfully").endResponseMessage()
                 .responseMessage().code(400).responseModel(GateException.class).message("Post order exception").endResponseMessage()
@@ -153,7 +153,7 @@ public class GateService extends RouteBuilder {
 
 ////                .to("kafka:CarTravelReqTopic?brokers=localhost:9092")
     }
-    private void train(){
+    private void table(){
         //--------------------------Post REST--------------------------------------------------------------------------//
         from("direct:tableOrder").routeId("tableOrder")
                 .log("tableOrder fired")
@@ -239,7 +239,5 @@ public class GateService extends RouteBuilder {
                 .marshal(jaxbOrderChairsResponse)
                 .to("spring-ws:" + chairsOrderUrl+ "/getChairsOrderSummary")
                 .unmarshal(jaxbOrderChairsResponse);
-
     }
-
 }
