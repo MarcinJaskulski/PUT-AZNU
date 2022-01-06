@@ -58,14 +58,9 @@ public class FurnitureFactoryController {
                     OrderSummaryResponse.class);
             model.addAttribute("orderSummaryResponse", response.getBody());
             return "orderSummary";
-        } catch(HttpStatusCodeException e) {
-            model.addAttribute("fault", e.getMessage());
+        } catch(HttpStatusCodeException ex) {
+            model.addAttribute("fault", ex);
             return "fault";
         }
-    }
-
-    @GetMapping("/fault")
-    public String fault(Model model){
-        return "fault";
     }
 }

@@ -63,7 +63,7 @@ public class GateService extends RouteBuilder {
                     String orderId = ordersIdentifierService.generateOrderId();
                     orderSummaryResponse.setId(orderId);
                     exchange.setProperty("orderId", orderId);
-                    exchange.setProperty("orderSummary", orderSummaryResponse);
+                    exchange.setProperty("orderSummaryResponse", orderSummaryResponse);
                 })
                 .saga()
                 .multicast()
@@ -77,7 +77,7 @@ public class GateService extends RouteBuilder {
 
                             OrderSummaryResponse orderSummary;
                             if (prevEx == null)
-                                orderSummary = currentEx.getProperty("orderSummary", OrderSummaryResponse.class);
+                                orderSummary = currentEx.getProperty("orderSummaryResponse", OrderSummaryResponse.class);
                             else
                                 orderSummary = prevEx.getMessage().getBody(OrderSummaryResponse.class);
 
@@ -163,6 +163,10 @@ public class GateService extends RouteBuilder {
         from("direct:tableOrder")
 //                from("kafka:tableOrderTopic?brokers=localhost:9092")
                 .routeId("tableOrder").log("tableOrder fired")
+                .saga()
+                .propagation(SagaPropagation.MANDATORY)
+                .compensation("direct:cancelTableOrder")
+                .option("orderSummary", simple("${exchangeProperty.orderSummaryResponse}"))
                 .process(exchange -> {
                     OrderRequest orderRequest = exchange.getMessage().getBody(OrderRequest.class);
                     exchange.getMessage().setBody(orderRequest.getTableOrder());
@@ -177,6 +181,17 @@ public class GateService extends RouteBuilder {
                     String orderId = exchange.getProperty("orderId", String.class);
                     ordersIdentifierService.assignTableId(orderId, tableOrderSummary.getId());
                 });
+
+        from("direct:cancelTableOrder")
+                .routeId("cancelTableOrder").log("cancelTableOrder fired")
+                .process(exchange -> {
+                    OrderSummaryResponse orderSummaryResponse = exchange.getMessage().getHeader("orderSummary", OrderSummaryResponse.class);
+                    String tableOrderId = ordersIdentifierService.getTableOrderId(orderSummaryResponse.getId());
+                    exchange.getMessage().setHeader("tableOrderId", tableOrderId);
+                })
+                .marshal().json()
+                .removeHeaders("CamelHttp*")
+                .toD("rest:delete:cancelTableOrder/${header.tableOrderId}?host=localhost:8085");
 
         //--------------------------Get REST--------------------------------------------------------------------------//
         from("direct:getTableOrder")
@@ -200,10 +215,10 @@ public class GateService extends RouteBuilder {
         from("direct:chairsOrder")
 //            from("kafka:chairsOrderTopic?brokers=localhost:9092")
                 .routeId("chairsOrder").log("chairsOrder fired")
-//                .saga()
-//                .propagation(SagaPropagation.MANDATORY)
-//                .compensation("direct:cancelChairsOrder")
-//                .option("orderSummary", simple("${exchangeProperty.orderSummary}"))
+                .saga()
+                .propagation(SagaPropagation.MANDATORY)
+                .compensation("direct:cancelChairsOrder")
+                .option("orderSummary", simple("${exchangeProperty.orderSummaryResponse}"))
                 .process((exchange) -> {
                     OrderRequest orderRequest = exchange.getMessage().getBody(OrderRequest.class);
                     OrderChairs orderChairs = new OrderChairs();
@@ -221,16 +236,17 @@ public class GateService extends RouteBuilder {
                 });
 
 
-//        from("direct:cancelChairsOrder").routeId("cancelChairsOrder")
-//                .log("cancelChairsOrder fired")
-//                .process(exchange -> {
-//                    ChairsOrderSummary orderSummary = exchange.getMessage().getHeader("orderSummary", ChairsOrderSummary.class);
-//                    CancelChairsOrder cancelChairsOrder = new CancelChairsOrder();
-//                    cancelChairsOrder.setArg0(orderSummary.getId());
-//                    exchange.getMessage().setBody(cancelChairsOrder);
-//                })
-//                .marshal(jaxbOrderChairsResponse)
-//                .to("spring-ws:" + chairsOrderUrl + "/cancelChairsOrder");
+        from("direct:cancelChairsOrder").routeId("cancelChairsOrder")
+                .log("cancelChairsOrder fired")
+                .process(exchange -> {
+                    OrderSummaryResponse orderSummaryResponse = exchange.getMessage().getHeader("orderSummary", OrderSummaryResponse.class);
+                    String chairOrderId = ordersIdentifierService.getChairsOrderId(orderSummaryResponse.getId());
+                    CancelChairsOrder cancelChairsOrder = new CancelChairsOrder();
+                    cancelChairsOrder.setArg0(chairOrderId);
+                    exchange.getMessage().setBody(cancelChairsOrder);
+                })
+                .marshal(jaxbOrderChairsResponse)
+                .to("spring-ws:" + chairsOrderUrl + "/cancelChairsOrder");
 
         //--------------------------Get SOAP--------------------------------------------------------------------------//
 
