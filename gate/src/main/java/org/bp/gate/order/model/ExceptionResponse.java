@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package org.bp.gate.travel.model;
+package org.bp.gate.order.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

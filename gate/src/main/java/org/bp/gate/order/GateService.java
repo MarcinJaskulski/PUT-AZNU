@@ -1,4 +1,4 @@
-package org.bp.gate.travel;
+package org.bp.gate.order;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -7,9 +7,9 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.bp.gate.chairs.*;
 import org.bp.gate.table.TableOrderSummary;
-import org.bp.gate.travel.model.GateException;
-import org.bp.gate.travel.model.OrderRequest;
-import org.bp.gate.travel.model.OrderSummaryResponse;
+import org.bp.gate.order.model.GateException;
+import org.bp.gate.order.model.OrderRequest;
+import org.bp.gate.order.model.OrderSummaryResponse;
 import org.springframework.stereotype.Component;
 
 import static org.apache.camel.model.rest.RestParamType.body;
@@ -165,7 +165,7 @@ public class GateService extends RouteBuilder {
                 .routeId("tableOrder").log("tableOrder fired")
                 .saga()
                 .propagation(SagaPropagation.MANDATORY)
-                .compensation("direct:cancelTableOrder")
+                .compensation("direct:cancelChairsOrder")
                 .option("orderSummary", simple("${exchangeProperty.orderSummaryResponse}"))
                 .process(exchange -> {
                     OrderRequest orderRequest = exchange.getMessage().getBody(OrderRequest.class);
@@ -217,7 +217,7 @@ public class GateService extends RouteBuilder {
                 .routeId("chairsOrder").log("chairsOrder fired")
                 .saga()
                 .propagation(SagaPropagation.MANDATORY)
-                .compensation("direct:cancelChairsOrder")
+                .compensation("direct:cancelTableOrder")
                 .option("orderSummary", simple("${exchangeProperty.orderSummaryResponse}"))
                 .process((exchange) -> {
                     OrderRequest orderRequest = exchange.getMessage().getBody(OrderRequest.class);

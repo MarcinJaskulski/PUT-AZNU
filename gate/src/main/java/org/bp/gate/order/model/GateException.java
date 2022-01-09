@@ -1,4 +1,4 @@
-package org.bp.gate.travel.model;
+package org.bp.gate.order.model;
 
 public class GateException extends Exception {
 

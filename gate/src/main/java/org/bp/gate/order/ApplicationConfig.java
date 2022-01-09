@@ -1,4 +1,4 @@
-package org.bp.gate.travel;
+package org.bp.gate.order;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.saga.InMemorySagaService;

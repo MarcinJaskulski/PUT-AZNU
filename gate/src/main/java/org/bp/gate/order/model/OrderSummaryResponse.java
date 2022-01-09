@@ -1,4 +1,4 @@
-package org.bp.gate.travel.model;
+package org.bp.gate.order.model;
 
 import org.bp.gate.chairs.ChairsOrderSummary;
 import org.bp.gate.table.TableOrderSummary;
