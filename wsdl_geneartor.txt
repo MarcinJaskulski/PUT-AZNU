@@ -1,3 +1,6 @@
+ #Odpalane z WSL Ubuntu
  wsimport -keep -s ./ http://localhost:8081/soap-api/service/car?wsdl
+ 
 
+#Przy pomocy swaggera można generować modele z REST. To chyba nie ten link xd
 https://editor.swagger.io/?_ga=2.39090660.639330192.1641313831-1058642731.1641313831
