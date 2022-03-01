@@ -4,4 +4,5 @@ C:\kafka>
 C:\kafka>
 .\bin\windows\kafka-server-start.bat .\config\server.properties
 
+#Śledzenie co wchodzi do tematu:
 .\bin\windows\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic bookTrainResponseTopic
